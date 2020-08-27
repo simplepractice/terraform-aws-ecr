@@ -44,7 +44,7 @@ data "aws_iam_policy_document" "allow_fetch_images_from_repo" {
   }
 }
 
-data "aws_iam_policy_document" "cross_account_pull" {
+data "aws_iam_policy_document" "cross_account" {
   statement {
     sid = "CrossAccountPull"
     principals {
@@ -52,15 +52,19 @@ data "aws_iam_policy_document" "cross_account_pull" {
       type        = "AWS"
     }
     actions = [
-      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
-      "ecr:GetDownloadUrlForLayer"
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:PutImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
     ]
   }
 }
 
 resource "aws_ecr_repository_policy" "cross_account_pull" {
   count      = var.share_with_accounts == [] ? 0 : 1
-  policy     = data.aws_iam_policy_document.cross_account_pull.json
+  policy     = data.aws_iam_policy_document.cross_account.json
   repository = aws_ecr_repository.image.name
 }
